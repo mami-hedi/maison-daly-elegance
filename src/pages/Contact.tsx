@@ -14,10 +14,7 @@ const Contact = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
-    checkin: "",
-    checkout: "",
-    guests: "",
+    subject: "",
     message: "",
   });
 
@@ -25,21 +22,17 @@ const Contact = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     toast({
-      title: "Demande envoyée !",
+      title: "Message envoyé !",
       description: "Nous vous répondrons dans les plus brefs délais.",
     });
     
     setFormData({
       name: "",
       email: "",
-      phone: "",
-      checkin: "",
-      checkout: "",
-      guests: "",
+      subject: "",
       message: "",
     });
     setIsSubmitting(false);
@@ -82,9 +75,8 @@ const Contact = () => {
                 Restons en contact
               </h2>
               <p className="font-body text-muted-foreground leading-relaxed mb-8">
-                Vous avez des questions sur nos chambres ou souhaitez effectuer une 
-                réservation ? N'hésitez pas à nous contacter. Notre équipe se fera 
-                un plaisir de vous répondre dans les plus brefs délais.
+                Vous avez des questions ? N'hésitez pas à nous contacter. 
+                Pour les réservations, rendez-vous sur la page de chaque chambre.
               </p>
 
               <div className="space-y-6">
@@ -140,15 +132,15 @@ const Contact = () => {
               </div>
             </div>
 
-            {/* Reservation Form */}
+            {/* Simple Contact Form */}
             <div>
               <div className="bg-secondary rounded-lg p-8">
                 <h2 className="font-display text-2xl font-semibold text-foreground mb-6">
-                  Demande de réservation
+                  Envoyez-nous un message
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
-                    <Label htmlFor="name" className="font-body">Nom complet *</Label>
+                    <Label htmlFor="name" className="font-body">Nom *</Label>
                     <Input
                       id="name"
                       name="name"
@@ -160,86 +152,43 @@ const Contact = () => {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email" className="font-body">Email *</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="mt-1"
-                        placeholder="votre@email.com"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="font-body">Téléphone</Label>
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="mt-1"
-                        placeholder="+33 6 12 34 56 78"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="checkin" className="font-body">Date d'arrivée *</Label>
-                      <Input
-                        id="checkin"
-                        name="checkin"
-                        type="date"
-                        value={formData.checkin}
-                        onChange={handleChange}
-                        required
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="checkout" className="font-body">Date de départ *</Label>
-                      <Input
-                        id="checkout"
-                        name="checkout"
-                        type="date"
-                        value={formData.checkout}
-                        onChange={handleChange}
-                        required
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-
                   <div>
-                    <Label htmlFor="guests" className="font-body">Nombre de personnes *</Label>
+                    <Label htmlFor="email" className="font-body">Email *</Label>
                     <Input
-                      id="guests"
-                      name="guests"
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={formData.guests}
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
                       onChange={handleChange}
                       required
                       className="mt-1"
-                      placeholder="2"
+                      placeholder="votre@email.com"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="message" className="font-body">Message (optionnel)</Label>
+                    <Label htmlFor="subject" className="font-body">Sujet *</Label>
+                    <Input
+                      id="subject"
+                      name="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      required
+                      className="mt-1"
+                      placeholder="Objet de votre message"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="message" className="font-body">Message *</Label>
                     <Textarea
                       id="message"
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      className="mt-1 min-h-[120px]"
-                      placeholder="Précisez vos besoins ou demandes particulières..."
+                      required
+                      className="mt-1 min-h-[150px]"
+                      placeholder="Votre message..."
                     />
                   </div>
 
@@ -250,7 +199,7 @@ const Contact = () => {
                     className="w-full"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Envoi en cours..." : "Envoyer la demande"}
+                    {isSubmitting ? "Envoi en cours..." : "Envoyer"}
                   </Button>
                 </form>
               </div>

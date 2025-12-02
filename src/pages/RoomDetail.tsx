@@ -1,6 +1,7 @@
 import { useParams, Link, Navigate } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { ReservationModal } from "@/components/ReservationModal";
 import { getRoomBySlug } from "@/data/rooms";
 import { Users, Maximize, Check, ArrowLeft } from "lucide-react";
 import roomKhadija from "@/assets/room-khadija.jpg";
@@ -101,15 +102,17 @@ const RoomDetail = () => {
                   Réserver cette chambre
                 </h3>
                 <p className="font-body text-muted-foreground text-sm mb-6">
-                  Contactez-nous pour vérifier les disponibilités et réserver votre séjour.
+                  Remplissez le formulaire pour effectuer votre demande de réservation.
                 </p>
                 <div className="flex items-baseline gap-2 mb-6">
                   <span className="font-display text-4xl font-bold text-primary">{room.price}€</span>
                   <span className="font-body text-muted-foreground">/ nuit</span>
                 </div>
-                <Button asChild variant="default" size="lg" className="w-full">
-                  <Link to="/contact">Réserver maintenant</Link>
-                </Button>
+                <ReservationModal room={room}>
+                  <Button variant="default" size="lg" className="w-full">
+                    Réserver maintenant
+                  </Button>
+                </ReservationModal>
                 <p className="font-body text-xs text-muted-foreground text-center mt-4">
                   Petit-déjeuner inclus • Annulation gratuite
                 </p>

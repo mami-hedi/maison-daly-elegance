@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
+import { ReservationModal } from "@/components/ReservationModal";
 import { rooms } from "@/data/rooms";
 import { Users, Maximize } from "lucide-react";
 import heroImage from "@/assets/hero-home.jpg";
@@ -51,20 +52,24 @@ const Rooms = () => {
                 className="group bg-card rounded-lg overflow-hidden shadow-sm border border-border animate-fade-in"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <img
-                    src={roomImages[room.slug]}
-                    alt={`Chambre ${room.name}`}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-body font-medium">
-                    {room.price}€ / nuit
+                <Link to={`/chambres/${room.slug}`} className="block">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={roomImages[room.slug]}
+                      alt={`Chambre ${room.name}`}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-body font-medium">
+                      {room.price}€ / nuit
+                    </div>
                   </div>
-                </div>
+                </Link>
                 <div className="p-6">
-                  <h3 className="font-display text-2xl font-semibold text-foreground mb-2">
-                    {room.name}
-                  </h3>
+                  <Link to={`/chambres/${room.slug}`}>
+                    <h3 className="font-display text-2xl font-semibold text-foreground mb-2 hover:text-primary transition-colors">
+                      {room.name}
+                    </h3>
+                  </Link>
                   <p className="font-body text-sm text-muted-foreground mb-4 line-clamp-2">
                     {room.shortDescription}
                   </p>
@@ -79,12 +84,14 @@ const Rooms = () => {
                     </div>
                   </div>
                   <div className="flex gap-3">
-                    <Button asChild variant="default" className="flex-1">
-                      <Link to={`/chambres/${room.slug}`}>Découvrir</Link>
-                    </Button>
                     <Button asChild variant="outline" className="flex-1">
-                      <Link to="/contact">Réserver</Link>
+                      <Link to={`/chambres/${room.slug}`}>Voir détails</Link>
                     </Button>
+                    <ReservationModal room={room}>
+                      <Button variant="default" className="flex-1">
+                        Réserver
+                      </Button>
+                    </ReservationModal>
                   </div>
                 </div>
               </div>
