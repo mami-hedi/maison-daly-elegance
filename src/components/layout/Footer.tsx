@@ -58,7 +58,7 @@ export function Footer() {
 
         <div className="border-t border-background/10 mt-12 pt-8 text-center">
           <p className="font-body text-sm text-background/50">
-            © {new Date().getFullYear()} Maison Daly. Tous droits réservés.
+            © {new Date().getFullYear()} Maison Daly. Tous droits réservés. <a href="https://www.mh-digital-solution.com" target="_blank">MH Digital Solution</a>
           </p>
         </div>
       </div>

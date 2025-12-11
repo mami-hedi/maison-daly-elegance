@@ -41,7 +41,7 @@ export function Header() {
             </Link>
           ))}
           <Button asChild variant="default" size="sm">
-            <Link to="/contact">Réserver</Link>
+            <Link to="/disponibilite">Recherche Disponibilté</Link>
           </Button>
         </div>
 
@@ -78,8 +78,8 @@ export function Header() {
               </Link>
             ))}
             <Button asChild variant="default" className="mt-2">
-              <Link to="/contact" onClick={() => setMobileMenuOpen(false)}>
-                Réserver
+              <Link to="/disponibilite" onClick={() => setMobileMenuOpen(false)}>
+                Recherche Disponibilté
               </Link>
             </Button>
           </div>

@@ -40,3 +40,15 @@
 .read-the-docs {
   color: #888;
 }
+
+
+.available-day {
+  background-color: #d1fae5; /* vert clair */
+  color: #065f46;            /* vert foncé pour le texte */
+}
+
+.unavailable-day {
+  background-color: #fee2e2; /* rouge clair */
+  color: #b91c1c;            /* rouge foncé pour le texte */
+}
+

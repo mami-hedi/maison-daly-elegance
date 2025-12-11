@@ -39,7 +39,7 @@ const Index = () => {
               <Link to="/chambres">Découvrir nos chambres</Link>
             </Button>
             <Button asChild variant="hero-outline" size="lg">
-              <Link to="/contact">Réserver maintenant</Link>
+              <Link to="/disponibilite">Recherche Disponibilité</Link>
             </Button>
           </div>
         </div>
