@@ -54,11 +54,12 @@ export function ReservationModal({ room, children }: ReservationModalProps) {
 
   // Charger dates réservées
   useEffect(() => {
-    fetch("http://localhost:3000/api/reservations/days")
-      .then((res) => res.json())
-      .then((data) => setAvailability(data.reservedDays))
-      .catch(console.error);
-  }, []);
+  fetch(`http://localhost:3000/api/reservations/days/${room.id}`)
+    .then((res) => res.json())
+    .then((data) => setAvailability(data.reservedDays))
+    .catch(console.error);
+}, [room.id]);
+
 
   // Calcul automatique du nombre de nuits
   useEffect(() => {
@@ -197,7 +198,7 @@ export function ReservationModal({ room, children }: ReservationModalProps) {
                   Prix par nuit
                 </p>
                 <p className="font-display text-2xl font-bold text-primary">
-                  {room.price}€
+                  {room.price}Dinars
                 </p>
               </div>
               <div className="text-right">
@@ -268,7 +269,7 @@ export function ReservationModal({ room, children }: ReservationModalProps) {
             </div>
             <div>
               <Label>Total à payer</Label>
-              <Input value={total + ' €'} readOnly className="bg-gray-100 font-bold" />
+              <Input value={total + ' Dinars'} readOnly className="bg-gray-100 font-bold" />
             </div>
           </div>
 

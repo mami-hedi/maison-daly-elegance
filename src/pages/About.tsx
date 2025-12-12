@@ -83,12 +83,7 @@ const About = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-primary rounded-lg flex items-center justify-center">
-                  <div className="text-center text-background">
-                    <span className="font-display text-3xl font-bold">10+</span>
-                    <p className="font-body text-xs">Années d'expérience</p>
-                  </div>
-                </div>
+                
               </div>
             </div>
           </div>

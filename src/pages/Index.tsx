@@ -142,20 +142,22 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="section-padding bg-foreground text-background">
-        <div className="container-custom text-center">
-          <h2 className="font-display text-4xl md:text-5xl font-semibold mb-6">
-            Prêt pour un séjour <span className="text-primary">inoubliable</span> ?
-          </h2>
-          <p className="font-body text-background/80 max-w-2xl mx-auto mb-10">
-            Réservez dès maintenant et laissez-nous vous offrir une expérience 
-            exceptionnelle. Notre équipe se fera un plaisir de vous accueillir.
-          </p>
-          <Button asChild variant="hero" size="lg">
-            <Link to="/contact">Réserver maintenant</Link>
-          </Button>
-        </div>
-      </section>
+      <section className="section-padding bg-gray-100 text-background">
+  <div className="container-custom text-center">
+   <h2 className="font-display text-4xl md:text-5xl font-semibold mb-6 text-black">
+  Prêt pour un séjour <span className="text-red-600">inoubliable</span> ?
+</h2>
+<p className="font-body text-black/80 max-w-2xl mx-auto mb-10">
+  Réservez dès maintenant et laissez-nous vous offrir une expérience 
+  exceptionnelle. Notre équipe se fera un plaisir de vous accueillir.
+</p>
+
+    <Button asChild variant="hero" size="lg">
+      <Link to="/chambres">Réserver maintenant</Link>
+    </Button>
+  </div>
+</section>
+
     </Layout>
   );
 };

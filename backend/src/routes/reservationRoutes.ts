@@ -14,7 +14,7 @@ const router = express.Router();
 router.get("/", fetchReservations);
 
 /**
- * Récupérer uniquement les jours réservés (pour le calendrier)
+ * 🔥 Récupérer les jours réservés POUR TOUTES LES CHAMBRES (utilisation backend/admin)
  */
 router.get("/days", async (req, res) => {
   try {
@@ -22,26 +22,52 @@ router.get("/days", async (req, res) => {
       "SELECT checkin, checkout FROM reservations WHERE status != 'cancelled'"
     );
 
-    // Générer un tableau contenant tous les jours réservés individuellement
     const reservedDays: string[] = [];
 
     rows.forEach((reservation: any) => {
       const start = new Date(reservation.checkin);
       const end = new Date(reservation.checkout);
 
-      // boucle jour par jour
-      for (let date = new Date(start); date < end; date.setDate(date.getDate() + 1)) {
-  // Convertir en date locale pour éviter les décalages UTC
-  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  reservedDays.push(localDate.toISOString().split("T")[0]);
-}
-
-
+      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+        const localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        reservedDays.push(localDate.toISOString().split("T")[0]);
+      }
     });
 
     res.json({ reservedDays });
   } catch (err) {
     res.status(500).json({ error: "Erreur serveur /days" });
+  }
+});
+
+/**
+ * ✅ Récupérer les jours réservés d’une SEULE chambre
+ *    (pour afficher son calendrier correctement)
+ */
+router.get("/days/:room_id", async (req, res) => {
+  const room_id = req.params.room_id;
+
+  try {
+    const [rows]: any = await db.query(
+      "SELECT checkin, checkout FROM reservations WHERE room_id = ? AND status != 'cancelled'",
+      [room_id]
+    );
+
+    const reservedDays: string[] = [];
+
+    rows.forEach((reservation: any) => {
+      const start = new Date(reservation.checkin);
+      const end = new Date(reservation.checkout);
+
+      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+        const localDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+        reservedDays.push(localDate.toISOString().split("T")[0]);
+      }
+    });
+
+    res.json({ reservedDays });
+  } catch (err) {
+    res.status(500).json({ error: "Erreur serveur /days/:room_id" });
   }
 });
 

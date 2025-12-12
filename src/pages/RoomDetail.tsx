@@ -105,7 +105,7 @@ const RoomDetail = () => {
                   Remplissez le formulaire pour effectuer votre demande de réservation.
                 </p>
                 <div className="flex items-baseline gap-2 mb-6">
-                  <span className="font-display text-4xl font-bold text-primary">{room.price}€</span>
+                  <span className="font-display text-4xl font-bold text-primary">{room.price}Dinars</span>
                   <span className="font-body text-muted-foreground">/ nuit</span>
                 </div>
                 <ReservationModal room={room}>
