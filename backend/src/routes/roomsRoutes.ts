@@ -3,10 +3,12 @@ import { db } from "../db";
 
 const router = Router();
 
-// 🔹 Retourne toutes les chambres (pour admin)
+// 🔹 Toutes les chambres (ADMIN)
 router.get("/", async (req, res) => {
   try {
-    const [rooms] = await db.query("SELECT id, name FROM rooms ORDER BY name ASC");
+    const [rooms] = await db.query(
+      "SELECT id, name FROM rooms ORDER BY name ASC"
+    );
     res.json(rooms);
   } catch (err) {
     console.error(err);
@@ -14,7 +16,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 🔹 Retourne uniquement les chambres disponibles pour un intervalle donné
+// 🔹 Chambres disponibles selon dates
 router.get("/available", async (req, res) => {
   const { checkin, checkout } = req.query;
 
@@ -23,22 +25,37 @@ router.get("/available", async (req, res) => {
   }
 
   try {
+    // ✅ Normalisation DATE (anti J-1)
+    const checkinDate = new Date(checkin as string)
+      .toISOString()
+      .split("T")[0];
+
+    const checkoutDate = new Date(checkout as string)
+      .toISOString()
+      .split("T")[0];
+
     const sql = `
       SELECT *
       FROM rooms
       WHERE id NOT IN (
         SELECT room_id
         FROM reservations
-        WHERE NOT (
-          checkout <= ? OR checkin >= ?
-        )
+        WHERE status IN ('confirmed', 'pending')
+          AND NOT (
+            DATE(checkout) <= ?
+            OR DATE(checkin) >= ?
+          )
       )
     `;
 
-    const [rooms] = await db.query(sql, [checkin, checkout]);
-    console.log("💥 CHECK SQL PARAMS :", checkin, checkout);
+    const [rooms] = await db.query(sql, [checkinDate, checkoutDate]);
+
+    console.log("✅ DISPONIBILITÉ");
+    console.log("checkin :", checkinDate);
+    console.log("checkout:", checkoutDate);
 
     return res.json(rooms);
+
   } catch (error: any) {
     console.error("🔥 ERREUR SQL :", error);
     return res.status(500).json({ error: error.message });

@@ -21,16 +21,16 @@ export const createReservation = async (reservation: Reservation) => {
     "SELECT id FROM rooms WHERE id = ?",
     [room_id]
   );
-
   if (roomExists.length === 0) {
     throw new Error("Cette chambre n'existe pas.");
   }
 
-  // Vérifier un conflit de date
+  // ✅ MODIFICATION PRINCIPALE : Vérifier un conflit de date EN EXCLUANT les réservations annulées
   const [exists]: any = await db.query(
     `SELECT * FROM reservations 
-     WHERE room_id = ? AND 
-           ((checkin <= ? AND checkout >= ?) 
+     WHERE room_id = ? 
+       AND status != 'cancelled'
+       AND ((checkin <= ? AND checkout >= ?) 
         OR  (checkin <= ? AND checkout >= ?)
         OR  (checkin >= ? AND checkout <= ?))`,
     [room_id, checkin, checkin, checkout, checkout, checkin, checkout]

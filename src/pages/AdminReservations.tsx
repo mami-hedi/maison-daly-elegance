@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { io } from "socket.io-client";
+import { FaEdit, FaTrash, FaTachometerAlt, FaUser, FaSignOutAlt } from "react-icons/fa";
 
 interface Reservation {
   id: number;
@@ -19,7 +20,7 @@ interface Reservation {
   message?: string;
   status: "confirmed" | "cancelled" | "pending";
   payment_status?: "paid" | "unpaid" | "partial";
-  advance_amount?: number; // si partial
+  advance_amount?: number;
 }
 
 interface Room {
@@ -30,21 +31,6 @@ interface Room {
 type SortKey = "name" | "room_name" | "checkin" | "checkout" | "status";
 
 export function AdminReservations() {
-
-  const socket = io("http://localhost:3000");
-  
-  useEffect(() => {
-    fetchReservations();
-    fetchRooms();
-
-    socket.on("reservationUpdated", () => {
-      fetchReservations();
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
   const { toast } = useToast();
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -58,19 +44,31 @@ export function AdminReservations() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingReservation, setEditingReservation] = useState<Reservation | null>(null);
-  // FormData
-const [formData, setFormData] = useState({
-  room_id: 0,
-  name: "",
-  email: "",
-  phone: "",
-  checkin: "",
-  checkout: "",
-  message: "",
-  status: "confirmed",
-  payment_status: "unpaid",
-  advance_amount: 0,
-});
+  
+  // ✅ CORRECTION 1: Type correct pour advance_amount (number | string)
+  const [formData, setFormData] = useState<{
+    room_id: number;
+    name: string;
+    email: string;
+    phone: string;
+    checkin: string;
+    checkout: string;
+    message: string;
+    status: string;
+    payment_status: string;
+    advance_amount: number | string;
+  }>({
+    room_id: 0,
+    name: "",
+    email: "",
+    phone: "",
+    checkin: "",
+    checkout: "",
+    message: "",
+    status: "confirmed",
+    payment_status: "unpaid",
+    advance_amount: 0,
+  });
 
   const [sortKey, setSortKey] = useState<SortKey>("checkin");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
@@ -106,9 +104,20 @@ const [formData, setFormData] = useState({
     }
   };
 
+  // ✅ CORRECTION 2: Socket.io initialisé correctement dans useEffect
   useEffect(() => {
     fetchReservations();
     fetchRooms();
+
+    const socket = io("http://localhost:3000");
+
+    socket.on("reservationUpdated", () => {
+      fetchReservations();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const filteredReservations = reservations
@@ -191,45 +200,52 @@ const [formData, setFormData] = useState({
   };
 
   const formatDateForInput = (dateStr: string) => {
-  const date = new Date(dateStr);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+    const date = new Date(dateStr);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
-const openForm = (reservation?: Reservation) => {
-  if (reservation) {
-    setEditingReservation(reservation);
-    setFormData({
-      ...reservation,
-      checkin: formatDateForInput(reservation.checkin),
-      checkout: formatDateForInput(reservation.checkout),
-      payment_status: reservation.payment_status || "unpaid",
-      advance_amount: reservation.advance_amount || "",
-    });
-  } else {
-    setEditingReservation(null);
-    setFormData({
-      room_id: 0,
-      name: "",
-      email: "",
-      phone: "",
-      checkin: "",
-      checkout: "",
-      message: "",
-      status: "confirmed",
-      payment_status: "unpaid",
-      advance_amount: "",
-    });
-  }
-  setFormOpen(true);
-};
-
-
+  const openForm = (reservation?: Reservation) => {
+    if (reservation) {
+      setEditingReservation(reservation);
+      setFormData({
+        room_id: reservation.room_id,
+        name: reservation.name,
+        email: reservation.email,
+        phone: reservation.phone,
+        checkin: formatDateForInput(reservation.checkin),
+        checkout: formatDateForInput(reservation.checkout),
+        message: reservation.message || "",
+        status: reservation.status,
+        payment_status: reservation.payment_status || "unpaid",
+        advance_amount: reservation.advance_amount || 0,
+      });
+    } else {
+      setEditingReservation(null);
+      setFormData({
+        room_id: 0,
+        name: "",
+        email: "",
+        phone: "",
+        checkin: "",
+        checkout: "",
+        message: "",
+        status: "confirmed",
+        payment_status: "unpaid",
+        advance_amount: 0,
+      });
+    }
+    setFormOpen(true);
+  };
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === "advance_amount" || name === "room_id" ? Number(value) : value
+    }));
   };
 
   const handleSaveReservation = async (e: React.FormEvent) => {
@@ -246,14 +262,21 @@ const openForm = (reservation?: Reservation) => {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error("Erreur serveur");
-      toast({ title: "Succès", description: `Réservation ${editingReservation ? "modifiée" : "ajoutée"}` });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Erreur serveur");
+      }
+
+      toast({ 
+        title: "Succès", 
+        description: `Réservation ${editingReservation ? "modifiée" : "ajoutée"}` 
+      });
       setFormOpen(false);
       fetchReservations();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer la réservation",
+        description: error.message || "Impossible d'enregistrer la réservation",
         variant: "destructive",
       });
     }
@@ -267,13 +290,111 @@ const openForm = (reservation?: Reservation) => {
     return `${year}-${month}-${day}`;
   };
 
+  const StatusBadge = ({ status }: { status: Reservation["status"] }) => {
+  const styles = {
+    confirmed: "bg-green-100 text-green-700",
+    cancelled: "bg-red-100 text-red-700",
+    pending: "bg-yellow-100 text-yellow-700",
+  };
   return (
-    <div className="px-8 py-6">
+    <span className={`px-3 py-1 rounded-full text-sm font-medium ${styles[status]}`}>
+      {status === "confirmed" && "Confirmé"}
+      {status === "cancelled" && "Annulé"}
+      {status === "pending" && "En attente"}
+    </span>
+  );
+};
+
+const PaymentBadge = ({ status, amount }: { status?: string; amount?: number }) => {
+  if (status === "paid") {
+    return <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">Payé</span>;
+  }
+  if (status === "partial") {
+    return (
+      <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm">
+        Avance {amount} DT
+      </span>
+    );
+  }
+  return <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm">Non payé</span>;
+};
+
+const totalReservations = reservations.length;
+
+const confirmedReservations = reservations.filter(
+  r => r.status === "confirmed"
+).length;
+
+const pendingReservations = reservations.filter(
+  r => r.status === "pending"
+).length;
+
+const paidReservations = reservations.filter(
+  r => r.payment_status === "paid"
+).length;
+
+
+
+  return (
+  <div className="flex min-h-screen bg-gray-100">
+    {/* Sidebar gauche */}
+    <aside className="w-64 bg-white shadow-md flex flex-col">
+      <div className="p-6 text-2xl font-bold text-blue-700 border-b">MH Admin</div>
+      <nav className="flex-1 p-4 space-y-2">
+        <button className="w-full flex items-center gap-3 px-4 py-2 rounded hover:bg-blue-100 transition">
+          <FaTachometerAlt /> Tableau de bord
+        </button>
+        <button className="w-full flex items-center gap-3 px-4 py-2 rounded hover:bg-blue-100 transition">
+          <FaUser /> Clients
+        </button>
+      </nav>
+      <button className="w-full flex items-center gap-3 px-4 py-2 rounded m-4 mt-auto text-red-600 hover:bg-red-100 transition">
+        <FaSignOutAlt /> Déconnexion
+      </button>
+    </aside>
+
+    {/* Contenu principal */}
+    <main className="flex-1 p-8 overflow-auto">
       <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded">
         Ici vous pouvez gérer toutes les réservations effectuées par les clients.
       </div>
 
       <h1 className="text-3xl font-bold text-center mb-6">Gestion des Réservations</h1>
+
+      {/* Tableau de bord des stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="rounded-xl p-5 flex items-center justify-between bg-blue-50 hover:bg-blue-100 transition-colors duration-300">
+          <div>
+            <p className="text-sm text-blue-700">Total réservations</p>
+            <p className="text-2xl font-bold text-blue-900">{totalReservations}</p>
+          </div>
+          <div className="bg-blue-200 text-blue-700 p-3 rounded-full text-xl">📅</div>
+        </div>
+
+        <div className="rounded-xl p-5 flex items-center justify-between bg-green-50 hover:bg-green-100 transition-colors duration-300">
+          <div>
+            <p className="text-sm text-green-700">Confirmées</p>
+            <p className="text-2xl font-bold text-green-900">{confirmedReservations}</p>
+          </div>
+          <div className="bg-green-200 text-green-700 p-3 rounded-full text-xl">✅</div>
+        </div>
+
+        <div className="rounded-xl p-5 flex items-center justify-between bg-yellow-50 hover:bg-yellow-100 transition-colors duration-300">
+          <div>
+            <p className="text-sm text-yellow-700">En attente</p>
+            <p className="text-2xl font-bold text-yellow-900">{pendingReservations}</p>
+          </div>
+          <div className="bg-yellow-200 text-yellow-700 p-3 rounded-full text-xl">⏳</div>
+        </div>
+
+        <div className="rounded-xl p-5 flex items-center justify-between bg-emerald-50 hover:bg-emerald-100 transition-colors duration-300">
+          <div>
+            <p className="text-sm text-emerald-700">Payées</p>
+            <p className="text-2xl font-bold text-emerald-900">{paidReservations}</p>
+          </div>
+          <div className="bg-emerald-200 text-emerald-700 p-3 rounded-full text-xl">💳</div>
+        </div>
+      </div>
 
       {/* Filtre, recherche et bouton ajouter */}
       <div className="flex justify-between mb-4 items-center space-x-4">
@@ -298,8 +419,12 @@ const openForm = (reservation?: Reservation) => {
           className="border rounded px-2 py-1"
         />
 
-        <Button onClick={() => openForm()} className="bg-blue-600 hover:bg-blue-700 text-white">
-          Ajouter
+        <Button
+          onClick={() => openForm()}
+          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 transition"
+        >
+          <span className="text-lg leading-none">+</span>
+          Ajouter une réservation
         </Button>
       </div>
 
@@ -307,56 +432,71 @@ const openForm = (reservation?: Reservation) => {
         <p className="text-center">Chargement...</p>
       ) : (
         <>
-          <table className="w-full border border-gray-200">
-            <thead className="bg-gray-100 cursor-pointer">
-              <tr>
-                <th className="p-3 border" onClick={() => handleSort("room_name")}>Chambre</th>
-                <th className="p-3 border" onClick={() => handleSort("name")}>Nom</th>
-                <th className="p-3 border">Email</th>
-                <th className="p-3 border">Téléphone</th>
-                <th className="p-3 border" onClick={() => handleSort("checkin")}>Arrivée</th>
-                <th className="p-3 border" onClick={() => handleSort("checkout")}>Départ</th>
-                <th className="p-3 border">Paiement</th>
-                <th className="p-3 border" onClick={() => handleSort("status")}>Status</th>
-                <th className="p-3 border">Actions</th>
-                <th className="p-3 border">Gestion</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedReservations.map(r => (
-                <tr key={r.id} className="text-center border-t">
-                  <td className="p-3 border">{r.room_name}</td>
-                  <td className="p-3 border">{r.name}</td>
-                  <td className="p-3 border">{r.email}</td>
-                  <td className="p-3 border">{r.phone}</td>
-                  <td className="p-3 border">{formatDate(r.checkin)}</td>
-                  <td className="p-3 border">{formatDate(r.checkout)}</td>
-                  <td className="p-3 border">
-  {r.payment_status === "paid" && <span className="text-green-600 font-bold">Payé</span>}
-  {r.payment_status === "unpaid" && <span className="text-red-600 font-bold">Non payé</span>}
-  {r.payment_status === "partial" && (
-    <span className="text-yellow-600 font-bold">
-      Avance : {r.advance_amount}€
-    </span>
-  )}
-</td>
-
-                  <td className={`p-3 border font-bold ${
-                      r.status === "confirmed" ? "text-green-600" :
-                      r.status === "cancelled" ? "text-red-600" : "text-yellow-600"
-                  }`}>{r.status}</td>
-                  <td className="p-3 border space-x-2">
-                    <Button size="sm" onClick={() => handleStatusChange(r.id, "confirmed")} className="bg-green-600 hover:bg-green-700 text-white">Confirmer</Button>
-                    <Button size="sm" onClick={() => handleStatusChange(r.id, "cancelled")} variant="destructive">Annuler</Button>
-                  </td>
-                  <td className="p-3 border space-x-2">
-                    <Button size="sm" onClick={() => openForm(r)} className="bg-yellow-500 hover:bg-yellow-600 text-white">Modifier</Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDeleteReservation(r.id)}>Supprimer</Button>
-                  </td>
+          <div className="overflow-x-auto rounded-xl border bg-white shadow-sm">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="px-4 py-3 text-left">Chambre</th>
+                  <th className="px-4 py-3 text-left">Client</th>
+                  <th className="px-4 py-3 text-left">Telephone</th>
+                  <th className="px-4 py-3">Dates</th>
+                  <th className="px-4 py-3 text-center">Paiement</th>
+                  <th className="px-4 py-3 text-center">Statut</th>
+                  <th className="px-4 py-3 text-center">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginatedReservations.map(r => (
+                  <tr key={r.id} className="border-t hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium">{r.room_name}</td>
+
+                    <td className="px-4 py-3">
+                      <div className="font-medium">{r.name}</div>
+                      <div className="text-gray-500 text-xs">{r.email}</div>
+                    </td>
+
+                    <td className="px-4 py-3 text-left">
+                      <div className="font-medium">{r.phone}</div>
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <div>{formatDate(r.checkin)}</div>
+                      <div className="text-gray-400 text-xs">→ {formatDate(r.checkout)}</div>
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <PaymentBadge status={r.payment_status} amount={r.advance_amount} />
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <StatusBadge status={r.status} />
+                    </td>
+
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex justify-center space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openForm(r)}
+                          className="flex items-center justify-center"
+                        >
+                          <FaEdit />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteReservation(r.id)}
+                          className="flex items-center justify-center"
+                        >
+                          <FaTrash />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           <div className="flex justify-center items-center mt-4 space-x-2">
             <Button size="sm" onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1}>Précédent</Button>
@@ -405,38 +545,39 @@ const openForm = (reservation?: Reservation) => {
               <Input type="date" name="checkout" value={formData.checkout} onChange={handleFormChange} required />
             </div>
             <div>
+              <Label>Statut de paiement</Label>
+              <select
+                name="payment_status"
+                value={formData.payment_status}
+                onChange={handleFormChange}
+                className="w-full border rounded px-2 py-1"
+              >
+                <option value="paid">Payé</option>
+                <option value="unpaid">Non payé</option>
+                <option value="partial">Avance</option>
+              </select>
+            </div>
+
+            {formData.payment_status === "partial" && (
               <div>
-  <Label>Statut de paiement</Label>
-  <select
-    name="payment_status"
-    value={formData.payment_status}
-    onChange={handleFormChange}
-    className="w-full border rounded px-2 py-1"
-  >
-    <option value="paid">Payé</option>
-    <option value="unpaid">Non payé</option>
-    <option value="partial">Avance</option>
-  </select>
-</div>
+                <Label>Montant de l'avance (DT)</Label>
+                <Input
+                  type="number"
+                  name="advance_amount"
+                  value={formData.advance_amount}
+                  onChange={handleFormChange}
+                  min={0}
+                  step={0.01}
+                  required
+                />
+              </div>
+            )}
 
-{formData.payment_status === "partial" && (
-  <div>
-    <Label>Montant de l'avance (€)</Label>
-    <Input
-      type="number"
-      name="advance_amount"
-      value={formData.advance_amount}
-      onChange={handleFormChange}
-      min={0}
-      step={0.01}
-      required
-    />
-  </div>
-)}
-
+            <div>
               <Label>Message</Label>
               <Textarea name="message" value={formData.message} onChange={handleFormChange} />
             </div>
+            
             <div>
               <Label>Status</Label>
               <select
@@ -453,12 +594,15 @@ const openForm = (reservation?: Reservation) => {
                 <option value="pending">En attente</option>
               </select>
             </div>
+            
             <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
               {editingReservation ? "Modifier" : "Ajouter"}
             </Button>
           </form>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </main>
+</div>
+);
 }
+
