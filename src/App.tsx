@@ -14,7 +14,11 @@ import  CheckRoomsPage  from "./pages/CheckRoomsPage";
 import NotFound from "./pages/NotFound";
 
 import { AdminReservations } from "./pages/AdminReservations";
+import { AdminClients } from "./pages/AdminClients";
+import { AdminAvailability } from "./pages/AdminAvailability";
+import { AdminLogin } from "./pages/AdminLogin";
 
+import { ProtectedAdminRoute } from "./components/ProtectedAdminRoute";
 
 // Nouvelle page calendrier
 import Reservations from "./pages/Reservations";
@@ -34,8 +38,36 @@ const App = () => (
           <Route path="/chambres/:slug" element={<RoomDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/reservations" element={<Reservations />} /> {/* Calendrier */}
-          <Route path="/admin/reservations" element={<AdminReservations />} />
+          
           <Route path="/disponibilite" element={<CheckRoomsPage />} />
+          {/* Admin login */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+
+          {/* Admin routes protégées */}
+          <Route 
+            path="/admin/reservations" 
+            element={
+              <ProtectedAdminRoute>
+                <AdminReservations />
+              </ProtectedAdminRoute>
+            } 
+          />
+          <Route 
+            path="/admin/clients" 
+            element={
+              <ProtectedAdminRoute>
+                <AdminClients />
+              </ProtectedAdminRoute>
+            } 
+          />
+          <Route 
+            path="/admin/availability" 
+            element={
+              <ProtectedAdminRoute>
+                <AdminAvailability />
+              </ProtectedAdminRoute>
+            } 
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

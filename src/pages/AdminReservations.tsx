@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { io } from "socket.io-client";
 import { FaEdit, FaTrash, FaTachometerAlt, FaUser, FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { Sidebar } from "@/components/Sidebar"; // <-- nouveau composant
+
 
 interface Reservation {
   id: number;
@@ -21,7 +24,9 @@ interface Reservation {
   status: "confirmed" | "cancelled" | "pending";
   payment_status?: "paid" | "unpaid" | "partial";
   advance_amount?: number;
+  total?: number; // ✅ AJOUT IMPORTANT
 }
+
 
 interface Room {
   id: number;
@@ -145,6 +150,7 @@ export function AdminReservations() {
     });
 
   const totalPages = Math.ceil(filteredReservations.length / itemsPerPage);
+
   const paginatedReservations = filteredReservations.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -305,19 +311,44 @@ export function AdminReservations() {
   );
 };
 
-const PaymentBadge = ({ status, amount }: { status?: string; amount?: number }) => {
+const PaymentBadge = ({
+  status,
+  amount,
+  total,
+}: {
+  status?: string;
+  amount?: number;
+  total?: number;
+}) => {
   if (status === "paid") {
-    return <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">Payé</span>;
-  }
-  if (status === "partial") {
     return (
-      <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm">
-        Avance {amount} DT
+      <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">
+        Payé
       </span>
     );
   }
-  return <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm">Non payé</span>;
+
+  if (status === "partial") {
+    const rest = total ? total - (amount || 0) : 0;
+    return (
+      <div className="flex flex-col items-center text-xs">
+        <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">
+          Avance {amount} DT
+        </span>
+        <span className="text-orange-600 mt-1">
+          Reste {rest.toFixed(2)} DT
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm">
+      Non payé
+    </span>
+  );
 };
+const navigate = useNavigate();
 
 const totalReservations = reservations.length;
 
@@ -333,28 +364,15 @@ const paidReservations = reservations.filter(
   r => r.payment_status === "paid"
 ).length;
 
+const [sidebarOpen, setSidebarOpen] = useState(false);
 
 
   return (
   <div className="flex min-h-screen bg-gray-100">
-    {/* Sidebar gauche */}
-    <aside className="w-64 bg-white shadow-md flex flex-col">
-      <div className="p-6 text-2xl font-bold text-blue-700 border-b">MH Admin</div>
-      <nav className="flex-1 p-4 space-y-2">
-        <button className="w-full flex items-center gap-3 px-4 py-2 rounded hover:bg-blue-100 transition">
-          <FaTachometerAlt /> Tableau de bord
-        </button>
-        <button className="w-full flex items-center gap-3 px-4 py-2 rounded hover:bg-blue-100 transition">
-          <FaUser /> Clients
-        </button>
-      </nav>
-      <button className="w-full flex items-center gap-3 px-4 py-2 rounded m-4 mt-auto text-red-600 hover:bg-red-100 transition">
-        <FaSignOutAlt /> Déconnexion
-      </button>
-    </aside>
+    <Sidebar active="reservations" />
 
     {/* Contenu principal */}
-    <main className="flex-1 p-8 overflow-auto">
+    <main className="flex-1 p-4 md:p-8 overflow-auto pt-20 md:pt-8">
       <div className="mb-4 p-3 bg-blue-100 text-blue-800 rounded">
         Ici vous pouvez gérer toutes les réservations effectuées par les clients.
       </div>
@@ -397,36 +415,42 @@ const paidReservations = reservations.filter(
       </div>
 
       {/* Filtre, recherche et bouton ajouter */}
-      <div className="flex justify-between mb-4 items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <label className="font-medium">Filtrer par statut:</label>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="border rounded px-2 py-1"
-          >
-            <option value="all">Tous</option>
-            <option value="confirmed">Confirmé</option>
-            <option value="cancelled">Annulé</option>
-            <option value="pending">En attente</option>
-          </select>
-        </div>
+<div className="flex flex-col gap-3 mb-4 md:flex-row md:items-center md:justify-between">
+  
+  {/* Filtre */}
+  <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-2">
+    <label className="font-medium">Filtrer par statut :</label>
+    <select
+      value={statusFilter}
+      onChange={(e) => setStatusFilter(e.target.value as any)}
+      className="border rounded px-2 py-1 w-full md:w-auto"
+    >
+      <option value="all">Tous</option>
+      <option value="confirmed">Confirmé</option>
+      <option value="cancelled">Annulé</option>
+      <option value="pending">En attente</option>
+    </select>
+  </div>
 
-        <Input
-          placeholder="Recherche par nom, email ou chambre"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="border rounded px-2 py-1"
-        />
+  {/* Recherche */}
+  <Input
+    placeholder="Recherche par nom, email ou chambre"
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    className="w-full md:max-w-xs"
+  />
 
-        <Button
-          onClick={() => openForm()}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 transition"
-        >
-          <span className="text-lg leading-none">+</span>
-          Ajouter une réservation
-        </Button>
-      </div>
+  {/* Bouton */}
+  <Button
+    onClick={() => openForm()}
+    className="flex items-center justify-center gap-2 w-full md:w-auto rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 transition"
+  >
+    <span className="text-lg leading-none">+</span>
+    Ajouter une réservation
+  </Button>
+
+</div>
+
 
       {loading ? (
         <p className="text-center">Chargement...</p>
@@ -440,61 +464,87 @@ const paidReservations = reservations.filter(
                   <th className="px-4 py-3 text-left">Client</th>
                   <th className="px-4 py-3 text-left">Telephone</th>
                   <th className="px-4 py-3">Dates</th>
+                  <th className="px-4 py-3 text-center">Total (DT)</th>
                   <th className="px-4 py-3 text-center">Paiement</th>
                   <th className="px-4 py-3 text-center">Statut</th>
                   <th className="px-4 py-3 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedReservations.map(r => (
-                  <tr key={r.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">{r.room_name}</td>
+  {paginatedReservations.map(r => (
+    <tr key={r.id} className="border-t hover:bg-gray-50">
+      <td className="px-4 py-3 font-medium">{r.room_name}</td>
 
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{r.name}</div>
-                      <div className="text-gray-500 text-xs">{r.email}</div>
-                    </td>
+      <td className="px-4 py-3">
+        <div className="font-medium">{r.name}</div>
+        <div className="text-gray-500 text-xs">{r.email}</div>
+      </td>
 
-                    <td className="px-4 py-3 text-left">
-                      <div className="font-medium">{r.phone}</div>
-                    </td>
+      <td className="px-4 py-3 text-left">
+        <div className="font-medium">{r.phone}</div>
+      </td>
 
-                    <td className="px-4 py-3 text-center">
-                      <div>{formatDate(r.checkin)}</div>
-                      <div className="text-gray-400 text-xs">→ {formatDate(r.checkout)}</div>
-                    </td>
+      <td className="px-4 py-3 text-center">
+        <div>{formatDate(r.checkin)}</div>
+        <div className="text-gray-400 text-xs">→ {formatDate(r.checkout)}</div>
+      </td>
 
-                    <td className="px-4 py-3 text-center">
-                      <PaymentBadge status={r.payment_status} amount={r.advance_amount} />
-                    </td>
+      {/* 🔥 NOUVEAU : Nombre de nuits */}
+      <td className="px-4 py-3 text-center">
+        {r.nights} nuit{r.nights > 1 ? "s" : ""}
+      </td>
 
-                    <td className="px-4 py-3 text-center">
-                      <StatusBadge status={r.status} />
-                    </td>
+      {/* 🔥 NOUVEAU : Total à payer */}
+      <td className="px-4 py-3 text-center">
+        {Number(r.total)?.toFixed(2)} Dinars
+      </td>
 
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex justify-center space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openForm(r)}
-                          className="flex items-center justify-center"
-                        >
-                          <FaEdit />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteReservation(r.id)}
-                          className="flex items-center justify-center"
-                        >
-                          <FaTrash />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+       <td className="px-4 py-3 text-center">
+  {r.payment_status === "paid" && (
+    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm">Payé</span>
+  )}
+  {r.payment_status === "unpaid" && (
+    <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-sm">Non payé</span>
+  )}
+  {r.payment_status === "partial" && (
+    <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm">
+      Avance {Number(r.advance_amount).toFixed(2)} Dinars - Reste {(
+        Number(r.total) - Number(r.advance_amount)
+      ).toFixed(2)} Dinars
+    </span>
+  )}
+</td>
+
+
+
+      <td className="px-4 py-3 text-center">
+        <StatusBadge status={r.status} />
+      </td>
+
+      <td className="px-4 py-3 text-center">
+        <div className="flex justify-center space-x-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => openForm(r)}
+            className="flex items-center justify-center"
+          >
+            <FaEdit />
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => handleDeleteReservation(r.id)}
+            className="flex items-center justify-center"
+          >
+            <FaTrash />
+          </Button>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
             </table>
           </div>
 
@@ -540,10 +590,12 @@ const paidReservations = reservations.filter(
               <Label>Arrivée *</Label>
               <Input type="date" name="checkin" value={formData.checkin} onChange={handleFormChange} required />
             </div>
+
             <div>
               <Label>Départ *</Label>
               <Input type="date" name="checkout" value={formData.checkout} onChange={handleFormChange} required />
             </div>
+
             <div>
               <Label>Statut de paiement</Label>
               <select

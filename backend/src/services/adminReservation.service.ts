@@ -2,15 +2,33 @@ import { db } from "../db";
 import { Reservation } from "../types";
 
 // 🔹 Récupérer toutes les réservations pour admin
+// 🔹 Récupérer toutes les réservations pour admin avec total et nights
 export const getAdminReservations = async () => {
-  const [rows] = await db.query(`
-    SELECT r.*, rm.name AS room_name
+  const [rows]: any = await db.query(`
+    SELECT r.*, rm.name AS room_name, rm.price
     FROM reservations r
     JOIN rooms rm ON r.room_id = rm.id
     ORDER BY r.checkin ASC
   `);
-  return rows;
+
+  // Calculer nights et total
+  return rows.map((r: any) => {
+    const checkinDate = new Date(r.checkin);
+    const checkoutDate = new Date(r.checkout);
+    const nights = Math.max(
+      0,
+      Math.ceil((checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24))
+    );
+    const total = nights * Number(r.price || 0);
+
+    return {
+      ...r,
+      nights,
+      total,
+    };
+  });
 };
+
 
 // 🔹 Ajouter réservation ADMIN
 export const addReservation = async (data: any) => {
