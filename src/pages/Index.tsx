@@ -28,7 +28,7 @@ const Index = () => {
         </div>
         <div className="relative z-10 text-center container-custom">
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-semibold text-background mb-6 animate-fade-in">
-            Maison <span className="text-primary">Daly</span>
+            Maison <span className="text-primary">MH</span>
           </h1>
           <p className="font-body text-lg md:text-xl text-background/90 max-w-2xl mx-auto mb-10 animate-fade-in animate-delay-200">
             Une maison d'hôtes d'exception où l'élégance rencontre le confort. 
@@ -53,7 +53,7 @@ const Index = () => {
               Bienvenue chez nous
             </h2>
             <p className="font-body text-muted-foreground leading-relaxed mb-8">
-              Nichée au cœur d'un cadre idyllique, Maison Daly vous ouvre ses portes 
+              Nichée au cœur d'un cadre idyllique, Maison MH vous ouvre ses portes 
               pour un séjour inoubliable. Notre maison d'hôtes allie le charme de 
               l'architecture traditionnelle au confort moderne, créant ainsi une 
               atmosphère unique où chaque détail est pensé pour votre bien-être.
@@ -123,7 +123,7 @@ const Index = () => {
                       {room.name}
                     </h3>
                     <p className="font-body text-sm text-background/80">
-                      À partir de {room.price}€ / nuit
+                      À partir de {room.price}DT / nuit
                     </p>
                   </div>
                 </div>

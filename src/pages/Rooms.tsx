@@ -60,7 +60,7 @@ const Rooms = () => {
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute top-4 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-body font-medium">
-                      {room.price}€ / nuit
+                      {room.price}DT / nuit
                     </div>
                   </div>
                 </Link>

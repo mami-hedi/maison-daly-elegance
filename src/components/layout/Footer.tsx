@@ -9,7 +9,7 @@ export function Footer() {
           {/* Brand */}
           <div>
             <h3 className="font-display text-2xl font-semibold mb-4">
-              Maison <span className="text-primary">Daly</span>
+              Maison <span className="text-primary">MH</span>
             </h3>
             <p className="font-body text-sm text-background/70 leading-relaxed">
               Une maison d'hôtes d'exception où le confort rencontre l'élégance.
@@ -42,7 +42,7 @@ export function Footer() {
             <div className="flex flex-col gap-3">
               <a href="mailto:contact@maisondaly.com" className="flex items-center gap-3 font-body text-sm text-background/70 hover:text-primary transition-colors">
                 <Mail className="h-4 w-4" />
-                contact@maisondaly.com
+                contact@maisonmh.com
               </a>
               <a href="tel:+33123456789" className="flex items-center gap-3 font-body text-sm text-background/70 hover:text-primary transition-colors">
                 <Phone className="h-4 w-4" />
@@ -58,7 +58,7 @@ export function Footer() {
 
         <div className="border-t border-background/10 mt-12 pt-8 text-center">
           <p className="font-body text-sm text-background/50">
-            © {new Date().getFullYear()} Maison Daly. Tous droits réservés. <a href="https://www.mh-digital-solution.com" target="_blank">MH Digital Solution</a>
+            © {new Date().getFullYear()} Maison MH. Tous droits réservés. <a href="https://www.mh-digital-solution.com" target="_blank">MH Digital Solution</a>
           </p>
         </div>
       </div>

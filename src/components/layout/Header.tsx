@@ -20,7 +20,7 @@ export function Header() {
       <nav className="container-custom flex items-center justify-between py-4">
         <Link to="/" className="flex items-center gap-2">
           <span className="font-display text-2xl font-semibold tracking-wide text-foreground">
-            Maison <span className="text-primary">Daly</span>
+            Maison <span className="text-primary">MH</span>
           </span>
         </Link>
 

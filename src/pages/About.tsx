@@ -41,7 +41,7 @@ const About = () => {
             À Propos
           </h1>
           <p className="font-body text-lg text-background/90 animate-fade-in animate-delay-200">
-            Découvrez l'histoire de Maison Daly
+            Découvrez l'histoire de Maison MH
           </p>
         </div>
       </section>
@@ -57,15 +57,15 @@ const About = () => {
                 </h2>
                 <div className="space-y-4 font-body text-muted-foreground leading-relaxed">
                   <p>
-                    Maison Daly est née d'un rêve : celui de créer un lieu où chaque 
+                    Maison MH est née d'un rêve : celui de créer un lieu où chaque 
                     voyageur pourrait se sentir chez soi, loin de chez soi. Fondée 
                     par la famille Daly, cette maison d'hôtes incarne les valeurs 
                     d'hospitalité qui nous sont chères depuis des générations.
                   </p>
                   <p>
                     Chaque chambre porte le nom d'un membre de notre famille, 
-                    reflétant ainsi l'histoire et l'âme de notre maison. De Khadija 
-                    à Ach, en passant par Sarra, Daly, Ghada et Papo, chaque espace 
+                    reflétant ainsi l'histoire et l'âme de notre maison. De ch MH5 
+                    à ch MH6, en passant par ch MH1, ch MH2, ch MH3 et ch MH4, chaque espace 
                     raconte une histoire unique.
                   </p>
                   <p>
@@ -131,7 +131,7 @@ const About = () => {
               Une Équipe Dévouée
             </h2>
             <p className="font-body text-muted-foreground leading-relaxed mb-8">
-              Derrière Maison Daly, il y a une équipe passionnée qui met tout en 
+              Derrière Maison MH, il y a une équipe passionnée qui met tout en 
               œuvre pour rendre votre séjour exceptionnel. De l'accueil à la 
               préparation de votre chambre, en passant par les conseils pour 
               découvrir la région, nous sommes là pour vous.

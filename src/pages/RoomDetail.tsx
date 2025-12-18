@@ -61,7 +61,7 @@ const RoomDetail = () => {
               <span className="font-body">{room.size} m²</span>
             </div>
             <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full font-body font-medium">
-              {room.price}€ / nuit
+              {room.price}DT / nuit
             </div>
           </div>
         </div>
